@@ -1,3 +1,4 @@
+
 ##########################################################
 ## API Gateway
 
@@ -31,25 +32,20 @@ resource "aws_lambda_permission" "exec-authorizer-lambda-permission" {
 
 
 ## API Deployment
+
+resource "aws_cloudwatch_log_group" "api-gateway-log" {
+  name              = "/aws/api-gw/http-api-test-stage"
+  retention_in_days = 7
+}
+
 resource "aws_apigatewayv2_stage" "http-api-test-stage" {
   api_id      = aws_apigatewayv2_api.http-api.id
   name        = "Test"
   auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api-gateway-log.arn
+    format = "$context.identity.sourceIp - - [$context.requestTime] \"$context.httpMethod $context.routeKey $context.protocol\" $context.status $context.responseLength $context.requestId AuthErr=[$context.authorizer.error] IntegrErr=[$context.integrationErrorMessage] GwErr=[$context.error.message] "
+  }
 }
 
-# resource "aws_apigatewayv2_deployment" "http-api-deployment" {
-#   api_id      = aws_apigatewayv2_api.http-api.id
-#   description = "Test Deployment"
-#   depends_on = [aws_apigatewayv2_integration.http-echo-api-integration, aws_apigatewayv2_route.http-echo-api-route]
-#
-#   triggers = {
-#     redeployment = sha1(join(",", tolist([
-#       jsonencode(aws_apigatewayv2_integration.http-echo-api-integration),
-#       jsonencode(aws_apigatewayv2_route.http-echo-api-route),
-#     ])))
-#   }
-#
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
