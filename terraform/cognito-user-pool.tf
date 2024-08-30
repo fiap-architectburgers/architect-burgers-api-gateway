@@ -29,6 +29,20 @@ resource "aws_cognito_user_pool" "customer-logins" {
   }
 }
 
+resource "aws_cognito_user_group" "clientes-cadastrados" {
+  name         = "ClientesCadastrados"
+  user_pool_id = aws_cognito_user_pool.customer-logins.id
+  description  = "Clientes cadastrados com CPF"
+  precedence   = 1
+}
+
+resource "aws_cognito_user_group" "cliente-anonimo" {
+  name         = "ClienteAnonimo"
+  user_pool_id = aws_cognito_user_pool.customer-logins.id
+  description  = "Clientes não identificados, autenticação gerenciada pelo frontend"
+  precedence   = 1
+}
+
 resource "aws_cognito_user_pool_client" "app-token-client" {
   name = "app-token-client"
 

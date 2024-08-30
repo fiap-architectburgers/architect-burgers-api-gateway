@@ -34,6 +34,11 @@ resource "aws_apigatewayv2_integration" "http-echo-api-integration" {
   integration_method        = "POST"
   integration_uri           = aws_lambda_function.sample-echo-function.invoke_arn
   passthrough_behavior      = "WHEN_NO_MATCH"
+
+  request_parameters = {
+    "overwrite:path" = "$request.path"
+    "overwrite:header.IdentityToken" = "$context.authorizer.IdentityToken"
+  }
 }
 
 resource "aws_apigatewayv2_route" "http-echo-api-route" {
