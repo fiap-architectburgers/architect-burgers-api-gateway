@@ -30,7 +30,7 @@ resource "aws_cognito_user_pool" "customer-logins" {
 }
 
 resource "aws_cognito_user_group" "clientes-cadastrados" {
-  name         = "ClientesCadastrados"
+  name         = "ClienteCadastrado"
   user_pool_id = aws_cognito_user_pool.customer-logins.id
   description  = "Clientes cadastrados com CPF"
   precedence   = 1
@@ -66,6 +66,10 @@ resource "aws_cognito_user_pool_client" "app-token-client" {
 resource "aws_cognito_user_pool_domain" "cognito-domain" {
   domain       = "archburgers-customers"
   user_pool_id = aws_cognito_user_pool.customer-logins.id
+}
+
+output "user-pool-id" {
+  value = aws_cognito_user_pool.customer-logins.id
 }
 
 output "app-token-client-id" {

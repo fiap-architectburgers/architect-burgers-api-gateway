@@ -26,26 +26,45 @@ exports.handler = async function (evt) {
 
         const authorizationHeader = headers.Authorization ?? headers.authorization
 
-        if (!authorizationHeader) {
-            // TODO Check list of open URLs
+        if (authorizationHeader) {
+            if (authorizationHeader.startsWith("Basic ")) {
+                return basicAuth(authorizationHeader, cognitoClientId, cognitoClientSecret)
+            }
+
+            if (authorizationHeader.startsWith("Bearer ")) {
+                return tokenAuth(authorizationHeader, cognitoClientId, cognitoClientSecret)
+            }
+
             return {
                 "isAuthorized": false,
                 "context": {
-                    "authError": "Authorization header not provided"
+                    "authError": "Unrecognized Authorization header"
+                }
+            };
+        }
+
+        /*
+        2 estratégias possíveis:
+        (a) tornar obrigatório autenticar apenas o endpoint /cliente/conectado - os demais são verificados na aplicação quando necessário
+        (b) toda a aplicação requer autenticação. APIs que não são para cliente conectado utilizam um login default. Abrir apenas quando
+            necessário, ex: healthcheck, webhook de pagamento
+
+        Utilizamos por agora a alternativa (a) por sua maior simplicidade. A segunda deve ser considerada em um ambiente de Produção
+         */
+        if (evt.path === "/cliente/conectado") {
+            return {
+                "isAuthorized": false,
+                "context": {
+                    "authError": "Authorization info not provided"
+                }
+            }
+        } else {
+            return {
+                "isAuthorized": true,
+                "context": {
                 }
             }
         }
-
-        if (authorizationHeader.startsWith("Basic ")) {
-            return basicAuth(authorizationHeader, cognitoClientId, cognitoClientSecret)
-        }
-
-        return {
-            "isAuthorized": false,
-            "context": {
-                "authError": "Auth info not recognized"
-            }
-        };
     } catch (e) {
         console.warn("Authorization error!", e)
         return {
@@ -119,6 +138,22 @@ async function basicAuth(authorizationHeader, cognitoClientId, cognitoClientSecr
     });
 
     return authResult;
+}
+
+async function tokenAuth(authorizationHeader, cognitoClientId, cognitoClientSecret) {
+    const token = authorizationHeader.split(" ")[1]
+    /*
+    A autenticação ficará mais robusta com uma validação da assinatura do token, certificando-se que veio do Cognito.
+    Esta validação já é feita no backend mas aqui no Authenticator conseguimos impedir acessos inválidos antes que cheguem na aplicação.
+    Para esta fase de laboratório é suficiente apenas encaminhar o token para o backend
+     */
+
+    return {
+        "isAuthorized": true,
+        "context": {
+            "IdentityToken": token
+        }
+    }
 }
 
 function secretHash(username, clientId, clientSecret) {
