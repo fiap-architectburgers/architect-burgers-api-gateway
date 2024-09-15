@@ -1,4 +1,10 @@
 
+
+## TODO --- Criação do Cognito movida para o projeto EKS. Obter dados para continuar daqui
+
+
+
+
 #######################################################
 ## "Echo API" - Simple Lambda for testing the infra
 

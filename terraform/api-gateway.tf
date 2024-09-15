@@ -1,14 +1,10 @@
 
-##########################################################
-## API Gateway
 
-resource "aws_apigatewayv2_api" "http-api" {
-  name          = "http-api"
-  protocol_type = "HTTP"
-}
+## TODO --- Criação do API Gateway movida para o projeto EKS. Obter dados para continuar daqui
 
-output "http-api-url" {
-  value = aws_apigatewayv2_api.http-api.api_endpoint
+
+data "aws_apigatewayv2_api" "http-api" {
+  api_id = ""
 }
 
 ## Authorization
@@ -30,22 +26,4 @@ resource "aws_lambda_permission" "exec-authorizer-lambda-permission" {
   source_arn    = "arn:aws:execute-api:us-east-1:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.http-api.id}/authorizers/${aws_apigatewayv2_authorizer.cognito-authorizer.id}"
 }
 
-
-## API Deployment
-
-resource "aws_cloudwatch_log_group" "api-gateway-log" {
-  name              = "/aws/api-gw/http-api-test-stage"
-  retention_in_days = 7
-}
-
-resource "aws_apigatewayv2_stage" "http-api-test-stage" {
-  api_id      = aws_apigatewayv2_api.http-api.id
-  name        = "Test"
-  auto_deploy = true
-
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.api-gateway-log.arn
-    format = "$context.identity.sourceIp - - [$context.requestTime] \"$context.httpMethod $context.routeKey $context.protocol\" $context.status $context.responseLength $context.requestId AuthErr=[$context.authorizer.error] IntegrErr=[$context.integrationErrorMessage] GwErr=[$context.error.message] "
-  }
-}
 
