@@ -11,7 +11,7 @@ on:
         required: false
         type: string
 
-      MASK_DATA:
+      TERRAFORM_MASKED_VARS:
         required: false
         type: string
 
@@ -50,8 +50,8 @@ jobs:
       - name: Create TF-Backend Dynamodb table
         run: ./utils/create-dyndb-table.sh ${{inputs.TF_LOCK_TABLE_NAME}}
 
-      - name: Mask sensitive data
-        run: for v in ${{inputs.MASK_DATA}}; do echo "::add-mask::$v"; done
+      - name: Mask sensitive terraform vars
+        run: echo "::add-mask::${{inputs.TERRAFORM_MASKED_VARS}}"
 
       - name: Terraform Init
         run: |
@@ -63,5 +63,5 @@ jobs:
 
       - name: Run terraform
         working-directory: ./terraform
-        run: terraform ${{inputs.TERRAFORM_COMMAND}} ${{inputs.TERRAFORM_VARS}}
+        run: terraform ${{inputs.TERRAFORM_COMMAND}} ${{inputs.TERRAFORM_VARS}} ${{inputs.TERRAFORM_MASKED_VARS}}
 
