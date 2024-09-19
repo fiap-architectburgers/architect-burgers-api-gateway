@@ -1,10 +1,5 @@
 
 
-## TODO --- Criação do Cognito movida para o projeto EKS. Obter dados para continuar daqui
-
-
-
-
 #######################################################
 ## "Echo API" - Simple Lambda for testing the infra
 
@@ -26,8 +21,8 @@ resource "aws_lambda_function" "authorizer-function" {
 
   environment {
     variables = {
-      COGNITO_CLIENT_ID = aws_cognito_user_pool_client.app-token-client.id
-      COGNITO_CLIENT_SECRET = aws_cognito_user_pool_client.app-token-client.client_secret
+      COGNITO_CLIENT_ID = var.cognito_user_pool_client_id
+      COGNITO_CLIENT_SECRET = var.cognito_user_pool_client_secret
     }
   }
 }
