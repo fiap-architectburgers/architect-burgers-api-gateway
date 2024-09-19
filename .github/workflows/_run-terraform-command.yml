@@ -11,6 +11,10 @@ on:
         required: false
         type: string
 
+      MASK_DATA:
+        required: false
+        type: string
+
       AWS_REGION:
         required: true
         type: string
@@ -41,10 +45,13 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
       - name: Create TF-Backend S3 Bucket
-        run: ./utils/create-s3-bucket.sh ${{ inputs.TF_STATE_BUCKET_NAME }}
+        run: ./utils/create-s3-bucket.sh ${{inputs.TF_STATE_BUCKET_NAME}}
 
       - name: Create TF-Backend Dynamodb table
-        run: ./utils/create-dyndb-table.sh ${{ inputs.TF_LOCK_TABLE_NAME }}
+        run: ./utils/create-dyndb-table.sh ${{inputs.TF_LOCK_TABLE_NAME}}
+
+      - name: Mask sensitive data
+        run: for v in ${{inputs.MASK_DATA}}; do echo "::add-mask::$v"; done
 
       - name: Terraform Init
         run: |

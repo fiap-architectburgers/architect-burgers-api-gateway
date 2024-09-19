@@ -27,18 +27,10 @@ jobs:
         run: ./utils/get-external-api-info.sh ${{vars.API_GATEWAY_NAME}} >> $GITHUB_OUTPUT
       - name: Get Cognito UserPool Info
         id: cognito-info
-        run: |
-          ./utils/get-user-pool-info.sh ${{vars.COGNITO_USER_POOL}} >> user-pool-credentials.temp
-          echo "::add-mask::$(cat user-pool-credentials.temp | grep USER_POOL_CLIENT_ID | cut -d= -f 2)"
-          echo "::add-mask::$(cat user-pool-credentials.temp | grep USER_POOL_CLIENT_SECRET | cut -d= -f 2)"
-          cat user-pool-credentials.temp >> $GITHUB_OUTPUT
+        run: ./utils/get-user-pool-info.sh ${{vars.COGNITO_USER_POOL}} >> $GITHUB_OUTPUT
       - name: Get App LoadBalancer Listener
         id: lb-listener-info
         run: ./utils/find-load-balancer.sh >> $GITHUB_OUTPUT
-      - name: Show sensitive values
-        run: |
-          echo "COG1 ${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}}"
-          echo "COG2 ${{steps.cognito-info.outputs.USER_POOL_CLIENT_SECRET}}"
     outputs:
       http_api_id: ${{steps.api-gw-info.outputs.API_ID}}
       cognito_user_pool_client_id: ${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}}
@@ -52,6 +44,8 @@ jobs:
       TERRAFORM_COMMAND: plan
 
       TERRAFORM_VARS: -var http_api_id=${{needs.get-service-info.outputs.http_api_id}} -var cognito_user_pool_client_id=${{needs.get-service-info.outputs.cognito_user_pool_client_id}} -var cognito_user_pool_client_secret=${{needs.get-service-info.outputs.cognito_user_pool_client_secret}} -var load_balancer_listener_arn=${{needs.get-service-info.outputs.load_balancer_listener_arn}}
+
+      MASK_DATA: ${{needs.get-service-info.outputs.cognito_user_pool_client_id}} ${{needs.get-service-info.outputs.cognito_user_pool_client_secret}}
 
       AWS_REGION: us-east-1
       TF_STATE_BUCKET_NAME: ${{vars.TF_STATE_BUCKET_NAME}}
