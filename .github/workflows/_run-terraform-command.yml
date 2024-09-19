@@ -1,0 +1,78 @@
+name: Run Terraform Command (reusable block)
+
+on:
+  workflow_call:
+    inputs:
+      TERRAFORM_COMMAND:
+        required: true
+        type: string
+
+      AWS_REGION:
+        required: true
+        type: string
+
+      API_GATEWAY_NAME:
+        required: true
+        type: string
+      COGNITO_USER_POOL:
+        required: true
+        type: string
+
+      TF_STATE_BUCKET_NAME:
+        required: true
+        type: string
+      TF_STATE_BUCKET_PATH:
+        required: true
+        type: string
+      TF_LOCK_TABLE_NAME:
+        required: true
+        type: string
+
+jobs:
+  terraform-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+      - name: Create TF-Backend S3 Bucket
+        run: ./utils/create-s3-bucket.sh ${{ inputs.TF_STATE_BUCKET_NAME }}
+
+      - name: Create TF-Backend Dynamodb table
+        run: ./utils/create-dyndb-table.sh ${{ inputs.TF_LOCK_TABLE_NAME }}
+
+      # Getting info from pre-requisite services
+      - name: Get API Gateway Info
+        id: api-gw-info
+        run: ./utils/get-external-api-info.sh ${{inputs.API_GATEWAY_NAME}}
+      - name: Get Cognito UserPool Info
+        id: cognito-info
+        run: ./utils/get-user-pool-info.sh ${{inputs.COGNITO_USER_POOL}}
+      - name: Get App LoadBalancer Listener
+        id: lb-listener-info
+        run: ./utils/find-load-balancer.sh
+
+      - name: Terraform Init
+        run: |
+          cd terraform && terraform init \
+            -backend-config="bucket=${{ inputs.TF_STATE_BUCKET_NAME }}" \
+            -backend-config="key=${{ inputs.TF_STATE_BUCKET_PATH }}" \
+            -backend-config="region=${{ inputs.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ inputs.TF_LOCK_TABLE_NAME }}"
+
+      - name: Run terraform
+        working-directory: ./terraform
+        run: |
+          terraform ${{inputs.TERRAFORM_COMMAND}} \
+          -var http_api_id=${{steps.api-gw-info.outputs.API_ID}} \
+          -var cognito_user_pool_client_id=${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}} \ 
+          -var cognito_user_pool_client_secret=${{steps.cognito-info.outputs.USER_POOL_CLIENT_SECRET}} \
+          -var load_balancer_listener_arn=${{steps.lb-listener-info.outputs.LISTENER_ARN}}

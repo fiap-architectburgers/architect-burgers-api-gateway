@@ -1,25 +1,4 @@
 
-# Set in deploy time
-# export TF_VAR_load_balancer_listener_arn="....."
-variable "load_balancer_listener_arn" {
-  description = "ARN of the load balancer listener (8090) created for the EKS cluster"
-  sensitive   = false
-}
-
-data "aws_vpc" "app-vpc" {
-  cidr_block = "10.0.0.0/16"
-}
-
-data "aws_subnet" "app-subnet-1" {
-  cidr_block = "10.0.1.0/24"
-}
-data "aws_subnet" "app-subnet-2" {
-  cidr_block = "10.0.2.0/24"
-}
-data "aws_subnet" "app-subnet-3" {
-  cidr_block = "10.0.3.0/24"
-}
-
 
 ###
 resource "aws_security_group" "allow_app_port" {
@@ -53,7 +32,7 @@ resource "aws_apigatewayv2_vpc_link" "app-vpc-link" {
 
 
 resource "aws_apigatewayv2_integration" "app-gateway-integration" {
-  api_id           = aws_apigatewayv2_api.http-api.id
+  api_id           = data.aws_apigatewayv2_api.http-api.id
   credentials_arn     = data.aws_iam_role.awsacademy-role.arn
   description         = "App Proxy Integration"
 
@@ -72,7 +51,7 @@ resource "aws_apigatewayv2_integration" "app-gateway-integration" {
 }
 
 resource "aws_apigatewayv2_route" "http-default-route" {
-  api_id    = aws_apigatewayv2_api.http-api.id
+  api_id    = data.aws_apigatewayv2_api.http-api.id
   route_key = "$default"
 
   authorization_type = "CUSTOM"
