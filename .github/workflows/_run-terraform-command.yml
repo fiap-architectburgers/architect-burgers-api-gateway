@@ -15,13 +15,6 @@ on:
         required: true
         type: string
 
-      API_GATEWAY_NAME:
-        required: true
-        type: string
-      COGNITO_USER_POOL:
-        required: true
-        type: string
-
       TF_STATE_BUCKET_NAME:
         required: true
         type: string
