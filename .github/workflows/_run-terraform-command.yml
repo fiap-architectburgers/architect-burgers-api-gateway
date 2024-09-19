@@ -7,6 +7,10 @@ on:
         required: true
         type: string
 
+      TERRAFORM_VARS:
+        required: false
+        type: string
+
       AWS_REGION:
         required: true
         type: string
@@ -49,17 +53,6 @@ jobs:
       - name: Create TF-Backend Dynamodb table
         run: ./utils/create-dyndb-table.sh ${{ inputs.TF_LOCK_TABLE_NAME }}
 
-      # Getting info from pre-requisite services
-      - name: Get API Gateway Info
-        id: api-gw-info
-        run: ./utils/get-external-api-info.sh ${{inputs.API_GATEWAY_NAME}} >> $GITHUB_OUTPUT
-      - name: Get Cognito UserPool Info
-        id: cognito-info
-        run: ./utils/get-user-pool-info.sh ${{inputs.COGNITO_USER_POOL}} >> $GITHUB_OUTPUT
-      - name: Get App LoadBalancer Listener
-        id: lb-listener-info
-        run: ./utils/find-load-balancer.sh >> $GITHUB_OUTPUT
-
       - name: Terraform Init
         run: |
           cd terraform && terraform init \
@@ -70,8 +63,5 @@ jobs:
 
       - name: Run terraform
         working-directory: ./terraform
-        run: terraform ${{inputs.TERRAFORM_COMMAND}}
-#          -var http_api_id=${{steps.api-gw-info.outputs.API_ID}} \
-#          -var cognito_user_pool_client_id=${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}} \
-#          -var cognito_user_pool_client_secret=${{steps.cognito-info.outputs.USER_POOL_CLIENT_SECRET}} \
-#          -var load_balancer_listener_arn=${{steps.lb-listener-info.outputs.LISTENER_ARN}}
+        run: terraform ${{inputs.TERRAFORM_COMMAND}} ${{inputs.TERRAFORM_VARS}}
+

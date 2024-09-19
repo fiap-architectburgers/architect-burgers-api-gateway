@@ -8,9 +8,6 @@ jobs:
     with:
       TERRAFORM_COMMAND: validate
 
-      API_GATEWAY_NAME: ${{vars.API_GATEWAY_NAME}}
-      COGNITO_USER_POOL: ${{vars.COGNITO_USER_POOL}}
-
       AWS_REGION: us-east-1
       TF_STATE_BUCKET_NAME: ${{vars.TF_STATE_BUCKET_NAME}}
       TF_STATE_BUCKET_PATH: ${{vars.TF_STATE_BUCKET_PATH}}
