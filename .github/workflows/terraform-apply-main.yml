@@ -1,9 +1,9 @@
 name: Terraform apply
 run-name: Create Auth-svc infra
-on: push   # TODO: On Main only
-#  push:
-#    branches:
-#      - main      # Apenas on push na main (PR aceito)
+on:
+  push:
+    branches:
+      - main      # Apenas on push na main (PR aceito)
 
 jobs:
   get-service-info:
