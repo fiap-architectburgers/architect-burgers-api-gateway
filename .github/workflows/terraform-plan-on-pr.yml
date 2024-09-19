@@ -27,14 +27,14 @@ jobs:
         run: ./utils/get-external-api-info.sh ${{vars.API_GATEWAY_NAME}} >> $GITHUB_OUTPUT
       - name: Get Cognito UserPool Info
         id: cognito-info
-        run: ./utils/get-user-pool-info.sh ${{vars.COGNITO_USER_POOL}} >> $GITHUB_OUTPUT
+        run: |
+          ./utils/get-user-pool-info.sh ${{vars.COGNITO_USER_POOL}} >> user-pool-credentials.temp
+          echo "::add-mask::$(cat user-pool-credentials.temp | grep USER_POOL_CLIENT_ID | cut -d= -f 2)"
+          echo "::add-mask::$(cat user-pool-credentials.temp | grep USER_POOL_CLIENT_SECRET | cut -d= -f 2)"
+          cat user-pool-credentials.temp >> $GITHUB_OUTPUT
       - name: Get App LoadBalancer Listener
         id: lb-listener-info
         run: ./utils/find-load-balancer.sh >> $GITHUB_OUTPUT
-      - name: Mask sensitive values
-        run: |
-          echo "::add-mask::${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}}"
-          echo "::add-mask::${{steps.cognito-info.outputs.USER_POOL_CLIENT_SECRET}}"
       - name: Show sensitive values
         run: |
           echo "COG1 ${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}}"
