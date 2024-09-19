@@ -70,9 +70,8 @@ jobs:
 
       - name: Run terraform
         working-directory: ./terraform
-        run: |
-          terraform ${{inputs.TERRAFORM_COMMAND}} \
-          -var http_api_id=${{steps.api-gw-info.outputs.API_ID}} \
-          -var cognito_user_pool_client_id=${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}} \ 
-          -var cognito_user_pool_client_secret=${{steps.cognito-info.outputs.USER_POOL_CLIENT_SECRET}} \
-          -var load_balancer_listener_arn=${{steps.lb-listener-info.outputs.LISTENER_ARN}}
+        run: terraform ${{inputs.TERRAFORM_COMMAND}}
+#          -var http_api_id=${{steps.api-gw-info.outputs.API_ID}} \
+#          -var cognito_user_pool_client_id=${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}} \
+#          -var cognito_user_pool_client_secret=${{steps.cognito-info.outputs.USER_POOL_CLIENT_SECRET}} \
+#          -var load_balancer_listener_arn=${{steps.lb-listener-info.outputs.LISTENER_ARN}}
