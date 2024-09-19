@@ -44,10 +44,14 @@ jobs:
       TERRAFORM_COMMAND: plan
 
       TERRAFORM_VARS: -var http_api_id=${{needs.get-service-info.outputs.http_api_id}} -var cognito_user_pool_client_id=${{needs.get-service-info.outputs.cognito_user_pool_client_id}} -var load_balancer_listener_arn=${{needs.get-service-info.outputs.load_balancer_listener_arn}}
-      TERRAFORM_MASKED_VARS: -var cognito_user_pool_client_secret=${{needs.get-service-info.outputs.cognito_user_pool_client_secret}}
 
       AWS_REGION: us-east-1
       TF_STATE_BUCKET_NAME: ${{vars.TF_STATE_BUCKET_NAME}}
       TF_STATE_BUCKET_PATH: ${{vars.TF_STATE_BUCKET_PATH}}
       TF_LOCK_TABLE_NAME: ${{vars.TF_LOCK_TABLE_NAME}}
-    secrets: inherit
+
+    secrets:
+      TERRAFORM_SECRET_VARS: -var cognito_user_pool_client_secret=${{needs.get-service-info.outputs.cognito_user_pool_client_secret}}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}

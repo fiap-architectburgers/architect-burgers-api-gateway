@@ -11,10 +11,6 @@ on:
         required: false
         type: string
 
-      TERRAFORM_MASKED_VARS:
-        required: false
-        type: string
-
       AWS_REGION:
         required: true
         type: string
@@ -28,6 +24,17 @@ on:
       TF_LOCK_TABLE_NAME:
         required: true
         type: string
+
+    secrets:
+      TERRAFORM_SECRET_VARS:
+        required: false
+
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: true
 
 jobs:
   terraform-run:
@@ -50,9 +57,6 @@ jobs:
       - name: Create TF-Backend Dynamodb table
         run: ./utils/create-dyndb-table.sh ${{inputs.TF_LOCK_TABLE_NAME}}
 
-      - name: Mask sensitive terraform vars
-        run: echo "::add-mask::${{inputs.TERRAFORM_MASKED_VARS}}"
-
       - name: Terraform Init
         run: |
           cd terraform && terraform init \
@@ -63,5 +67,5 @@ jobs:
 
       - name: Run terraform
         working-directory: ./terraform
-        run: terraform ${{inputs.TERRAFORM_COMMAND}} ${{inputs.TERRAFORM_VARS}} ${{inputs.TERRAFORM_MASKED_VARS}}
+        run: terraform ${{inputs.TERRAFORM_COMMAND}} ${{inputs.TERRAFORM_VARS}} ${{inputs.TERRAFORM_SECRET_VARS}}
 
