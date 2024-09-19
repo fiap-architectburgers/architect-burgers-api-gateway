@@ -13,7 +13,7 @@ variable "cognito_user_pool_client_secret" {
   type = string
 }
 
-# export TF_VAR_load_balancer_listener_arn="....."
+## export TF_VAR_load_balancer_listener_arn="....."
 variable "load_balancer_listener_arn" {
   type = string
   description = "ARN of the load balancer listener (8090) created for the EKS cluster"
