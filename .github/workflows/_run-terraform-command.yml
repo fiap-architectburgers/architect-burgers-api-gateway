@@ -52,13 +52,13 @@ jobs:
       # Getting info from pre-requisite services
       - name: Get API Gateway Info
         id: api-gw-info
-        run: ./utils/get-external-api-info.sh ${{inputs.API_GATEWAY_NAME}}
+        run: ./utils/get-external-api-info.sh ${{inputs.API_GATEWAY_NAME}} >> $GITHUB_OUTPUT
       - name: Get Cognito UserPool Info
         id: cognito-info
-        run: ./utils/get-user-pool-info.sh ${{inputs.COGNITO_USER_POOL}}
+        run: ./utils/get-user-pool-info.sh ${{inputs.COGNITO_USER_POOL}} >> $GITHUB_OUTPUT
       - name: Get App LoadBalancer Listener
         id: lb-listener-info
-        run: ./utils/find-load-balancer.sh
+        run: ./utils/find-load-balancer.sh >> $GITHUB_OUTPUT
 
       - name: Terraform Init
         run: |
