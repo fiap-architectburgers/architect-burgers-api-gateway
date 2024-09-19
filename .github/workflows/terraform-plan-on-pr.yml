@@ -31,6 +31,10 @@ jobs:
       - name: Get App LoadBalancer Listener
         id: lb-listener-info
         run: ./utils/find-load-balancer.sh >> $GITHUB_OUTPUT
+      - name: Mask sensitive values
+        run: |
+          echo "::add-mask::${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}}" \
+          echo "::add-mask::${{steps.cognito-info.outputs.USER_POOL_CLIENT_SECRET}}"
     outputs:
       http_api_id: ${{steps.api-gw-info.outputs.API_ID}}
       cognito_user_pool_client_id: ${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}}
