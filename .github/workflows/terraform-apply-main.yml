@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main      # Apenas on push na main (PR aceito)
+  workflow_dispatch: {}
 
 jobs:
   get-service-info:
