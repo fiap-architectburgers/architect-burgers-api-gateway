@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
       - reopened
 
 jobs:
@@ -28,14 +29,24 @@ jobs:
       - name: Get Cognito UserPool Info
         id: cognito-info
         run: ./utils/get-user-pool-info.sh ${{vars.COGNITO_USER_POOL}} >> $GITHUB_OUTPUT
-      - name: Get App LoadBalancer Listener
-        id: lb-listener-info
-        run: ./utils/find-load-balancer.sh >> $GITHUB_OUTPUT
+
+      - name: Get App LoadBalancer Listener - Pagamento
+        id: lb-listener-info-pagamento
+        run: ./utils/find-load-balancer.sh ${{vars.SERVICE_PORT_PAGAMENTO}} >> $GITHUB_OUTPUT
+      - name: Get App LoadBalancer Listener - Pedidos
+        id: lb-listener-info-pedidos
+        run: ./utils/find-load-balancer.sh ${{vars.SERVICE_PORT_PEDIDOS}} >> $GITHUB_OUTPUT
+      - name: Get App LoadBalancer Listener - Catalogo
+        id: lb-listener-info-catalogo
+        run: ./utils/find-load-balancer.sh ${{vars.SERVICE_PORT_CATALOGO}} >> $GITHUB_OUTPUT
+
     outputs:
       http_api_id: ${{steps.api-gw-info.outputs.API_ID}}
       cognito_user_pool_client_id: ${{steps.cognito-info.outputs.USER_POOL_CLIENT_ID}}
       cognito_user_pool_client_secret: ${{steps.cognito-info.outputs.USER_POOL_CLIENT_SECRET}}
-      load_balancer_listener_arn: ${{steps.lb-listener-info.outputs.LISTENER_ARN}}
+      load_balancer_pagamento_arn: ${{steps.lb-listener-info-pagamento.outputs.LISTENER_ARN}}
+      load_balancer_pedidos_arn: ${{steps.lb-listener-info-pedidos.outputs.LISTENER_ARN}}
+      load_balancer_catalogo_arn: ${{steps.lb-listener-info-catalogo.outputs.LISTENER_ARN}}
 
   terraform-plan:
     needs: get-service-info
@@ -43,7 +54,7 @@ jobs:
     with:
       TERRAFORM_COMMAND: plan
 
-      TERRAFORM_VARS: -var http_api_id=${{needs.get-service-info.outputs.http_api_id}} -var cognito_user_pool_client_id=${{needs.get-service-info.outputs.cognito_user_pool_client_id}} -var load_balancer_listener_arn=${{needs.get-service-info.outputs.load_balancer_listener_arn}}
+      TERRAFORM_VARS: -var http_api_id=${{needs.get-service-info.outputs.http_api_id}} -var cognito_user_pool_client_id=${{needs.get-service-info.outputs.cognito_user_pool_client_id}} -var load_balancer_pagamento_arn=${{needs.get-service-info.outputs.load_balancer_pagamento_arn}} -var load_balancer_pedidos_arn=${{needs.get-service-info.outputs.load_balancer_pedidos_arn}} -var load_balancer_catalogo_arn=${{needs.get-service-info.outputs.load_balancer_catalogo_arn}}
 
       AWS_REGION: us-east-1
       TF_STATE_BUCKET_NAME: ${{vars.TF_STATE_BUCKET_NAME}}
