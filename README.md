@@ -1,7 +1,7 @@
 ## Criação de Infraestrutura de autorização e integração App<->ApiGateway
 
 Infrastructure as Code. Utiliza Terraform para a criação/manutenção dos recursos na nuvem AWS.
-
+ 
 ### Como realizar o deployment
 
 O Terraform está integrado ao workflow do Github Actions. 
