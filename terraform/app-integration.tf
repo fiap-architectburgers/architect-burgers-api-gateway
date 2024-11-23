@@ -1,5 +1,4 @@
 
-
 ###
 resource "aws_security_group" "allow_app_port" {
   name        = "allow_app_port"
@@ -12,7 +11,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_app_port_ingress" {
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "tcp"
   from_port         = 8090
-  to_port           = 8090
+  to_port           = 8092
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_app_port_egress" {
@@ -20,7 +19,7 @@ resource "aws_vpc_security_group_egress_rule" "allow_app_port_egress" {
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "tcp"
   from_port         = 8090
-  to_port           = 8090
+  to_port           = 8092
 }
 
 
@@ -31,14 +30,32 @@ resource "aws_apigatewayv2_vpc_link" "app-vpc-link" {
 }
 
 
-resource "aws_apigatewayv2_integration" "app-gateway-integration" {
+resource "aws_apigatewayv2_integration" "app-gateway-integration-pagamento" {
   api_id           = data.aws_apigatewayv2_api.http-api.id
   credentials_arn     = data.aws_iam_role.awsacademy-role.arn
-  description         = "App Proxy Integration"
+  description         = "App Proxy Integration - Serviço de Pagamento"
 
   integration_type    = "HTTP_PROXY"
 
-  integration_uri = var.load_balancer_listener_arn
+  integration_uri = var.load_balancer_pagamento_arn
+  integration_method = "ANY"
+
+  connection_type = "VPC_LINK"
+  connection_id = aws_apigatewayv2_vpc_link.app-vpc-link.id
+
+  request_parameters = {
+    "overwrite:path" = "$request.path"
+  }
+}
+
+resource "aws_apigatewayv2_integration" "app-gateway-integration-pedidos" {
+  api_id           = data.aws_apigatewayv2_api.http-api.id
+  credentials_arn     = data.aws_iam_role.awsacademy-role.arn
+  description         = "App Proxy Integration - Serviço de Pedidos"
+
+  integration_type    = "HTTP_PROXY"
+
+  integration_uri = var.load_balancer_pedidos_arn
   integration_method = "ANY"
 
   connection_type = "VPC_LINK"
@@ -50,13 +67,57 @@ resource "aws_apigatewayv2_integration" "app-gateway-integration" {
   }
 }
 
-resource "aws_apigatewayv2_route" "http-default-route" {
+resource "aws_apigatewayv2_integration" "app-gateway-integration-catalogo" {
+  api_id           = data.aws_apigatewayv2_api.http-api.id
+  credentials_arn     = data.aws_iam_role.awsacademy-role.arn
+  description         = "App Proxy Integration - Serviço de Catalogo"
+
+  integration_type    = "HTTP_PROXY"
+
+  integration_uri = var.load_balancer_catalogo_arn
+  integration_method = "ANY"
+
+  connection_type = "VPC_LINK"
+  connection_id = aws_apigatewayv2_vpc_link.app-vpc-link.id
+
+  request_parameters = {
+    "overwrite:path" = "$request.path"
+  }
+}
+
+resource "aws_apigatewayv2_route" "http-route-catalogo" {
+  api_id    = data.aws_apigatewayv2_api.http-api.id
+  route_key = "ANY /cardapio"
+
+  target = "integrations/${aws_apigatewayv2_integration.app-gateway-integration-catalogo.id}"
+}
+resource "aws_apigatewayv2_route" "http-route-catalogo-subpath" {
+  api_id    = data.aws_apigatewayv2_api.http-api.id
+  route_key = "ANY /cardapio/{subpath+}"
+
+  target = "integrations/${aws_apigatewayv2_integration.app-gateway-integration-catalogo.id}"
+}
+
+resource "aws_apigatewayv2_route" "http-route-pagamento" {
+  api_id    = data.aws_apigatewayv2_api.http-api.id
+  route_key = "ANY /pagamento/{subpath+}"
+
+  target = "integrations/${aws_apigatewayv2_integration.app-gateway-integration-pagamento.id}"
+}
+resource "aws_apigatewayv2_route" "http-route-pagamento-webhook" {
+  api_id    = data.aws_apigatewayv2_api.http-api.id
+  route_key = "ANY /pagamento-webhook/{subpath+}"
+
+  target = "integrations/${aws_apigatewayv2_integration.app-gateway-integration-pagamento.id}"
+}
+
+resource "aws_apigatewayv2_route" "http-default-route-pedidos" {
   api_id    = data.aws_apigatewayv2_api.http-api.id
   route_key = "$default"
 
   authorization_type = "CUSTOM"
   authorizer_id = aws_apigatewayv2_authorizer.cognito-authorizer.id
 
-  target = "integrations/${aws_apigatewayv2_integration.app-gateway-integration.id}"
+  target = "integrations/${aws_apigatewayv2_integration.app-gateway-integration-pedidos.id}"
 }
 
