@@ -1,5 +1,5 @@
 name: Terraform apply
-run-name: Create Auth-svc infra
+run-name: Create API Gateway setup
 on:
   push:
     branches:

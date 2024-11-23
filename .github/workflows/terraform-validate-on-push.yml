@@ -1,5 +1,5 @@
 name: Terraform validate
-run-name: Validating auth-svc infra after ${{github.actor}}'s changes
+run-name: Validating API Gateway setup after ${{github.actor}}'s changes
 on: push
 
 jobs:

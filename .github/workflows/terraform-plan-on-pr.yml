@@ -1,5 +1,5 @@
 name: Terraform plan
-run-name: Auth-svc infra Terraform plan
+run-name: API Gateway setup Terraform plan
 on:
   pull_request:
     types:
