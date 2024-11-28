@@ -8,7 +8,8 @@ then
   exit 1
 fi
 
-aws s3api head-bucket --bucket $bucket_name
+#aws s3api head-bucket --bucket $bucket_name
+aws s3 ls | grep -i $bucket_name
 if [ $? -eq 0 ]
 then
   echo "Bucket $bucket_name exists"
@@ -16,5 +17,5 @@ then
 fi
 
 echo "Bucket $bucket_name will be created"
-
-aws s3 mb s3://$bucket_name
+#aws s3 mb s3://$bucket_name
+aws s3api create-bucket --bucket $bucket_name
